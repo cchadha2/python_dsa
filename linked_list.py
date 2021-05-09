@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from typing import Type
 
@@ -28,6 +29,20 @@ class LinkedListIterator:
         return current_node.value
 
 
+def _add_to_empty(insert_method):
+    """Used to add value when LinkedList is empty."""
+    @functools.wraps(insert_method)
+    def decorator(self, value):
+        if self.is_empty:
+            node = _Node(value)
+            self._first = self._last = node
+            self._size += 1
+        else:
+            insert_method(self, value)
+
+    return decorator
+
+
 class LinkedList:
     def __init__(self, *values):
         self._first = self._last = None
@@ -44,28 +59,22 @@ class LinkedList:
     def is_empty(self):
         return self._size == 0
 
+    @_add_to_empty
     def append(self, value):
         """Append given value to end of LinkedList."""
         node = _Node(value)
 
-        if self.is_empty:
-            self._first = node
-        else:
-            self._last.after = node
-
+        self._last.after = node
         self._last = node
         self._size += 1
 
+    @_add_to_empty
     def insert_first(self, value):
         """Insert given value at start of LinkedList"""
         node = _Node(value)
 
         node.after = self._first
         self._first = node
-
-        if self.is_empty:
-            self._last = node
-
         self._size += 1
 
     def insert_after(self, value, to_insert):
@@ -88,8 +97,7 @@ class LinkedList:
 
     def remove_first(self):
         """Remove first value in LinkedList and return."""
-        if self.is_empty:
-            raise ValueError("No values in LinkedList.")
+        self._raise_empty_error()
 
         node = self._first
         if node.after:
@@ -103,7 +111,10 @@ class LinkedList:
 
     def remove_after(self, value):
         """Remove value after given value and return."""
+        self._raise_empty_error()
+
         node = self._get(value)
+
         if not node.after:
             raise ValueError("No value after given value.")
 
@@ -113,6 +124,11 @@ class LinkedList:
         self._size -= 1
 
         return to_return.value
+
+    def _raise_empty_error(self):
+        """Raise a ValueError if LinkedList is empty."""
+        if self.is_empty:
+            raise ValueError("No values in LinkedList.")
 
     def _get(self, value):
         """Get a _Node object with the given value."""
@@ -136,8 +152,7 @@ class LinkedList:
         return LinkedListIterator(self._first)
 
     def __str__(self):
-        list_of_values = list(self.__iter__())
-        return str(list_of_values)
+        return f"[{', '.join(str(elem) for elem in self.__iter__())}]"
 
     def __len__(self):
         return self._size
@@ -210,4 +225,6 @@ if __name__ == '__main__':
         pass
     else:
         print("One of these didn't raise correctly hmmm")
+
+    print("hello" in linked_list)
 
