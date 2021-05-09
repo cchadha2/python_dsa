@@ -1,0 +1,213 @@
+from dataclasses import dataclass
+from typing import Type
+
+
+@dataclass
+class _Node:
+    """A private class used to hold data within LinkedList."""
+    value: object
+    after: Type["_Node"] = None
+
+
+class LinkedListIterator:
+    """Iterator class for LinkedList."""
+    def __init__(self, first):
+        """Initialise with first value in LinkedList"""
+        self.next_node = first
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        """Manipulate _Node references to point to next node in LinkedList."""
+        if not self.next_node:
+            raise StopIteration
+
+        current_node = self.next_node
+        self.next_node = current_node.after
+        return current_node.value
+
+
+class LinkedList:
+    def __init__(self, *values):
+        self._first = self._last = None
+        self._size = 0
+
+        if values:
+            self._first = _Node(values[0])
+            self._last = self._first
+            self._size += 1
+            for value in values[1:]:
+                self.append(value)
+
+    @property
+    def is_empty(self):
+        return self._size == 0
+
+    def append(self, value):
+        """Append given value to end of LinkedList."""
+        node = _Node(value)
+
+        if self.is_empty:
+            self._first = node
+        else:
+            self._last.after = node
+
+        self._last = node
+        self._size += 1
+
+    def insert_first(self, value):
+        """Insert given value at start of LinkedList"""
+        node = _Node(value)
+
+        node.after = self._first
+        self._first = node
+
+        if self.is_empty:
+            self._last = node
+
+        self._size += 1
+
+    def insert_after(self, value, to_insert):
+        """Insert a given value after another value (if the other value exists)."""
+        node = self._get(value)
+        node_to_insert = _Node(to_insert)
+
+        if not node.after:
+            node.after = node_to_insert
+        else:
+            node_to_insert.after = node.after
+            node.after = node_to_insert
+
+        self._size += 1
+
+    def extend(self, values):
+        """Extend the LinkedList given an iterable `values`."""
+        for value in values:
+            self.append(value)
+
+    def remove_first(self):
+        """Remove first value in LinkedList and return."""
+        if self.is_empty:
+            raise ValueError("No values in LinkedList.")
+
+        node = self._first
+        if node.after:
+            self._first = node.after
+        else:
+            self._first = None
+
+        self._size -= 1
+
+        return node.value
+
+    def remove_after(self, value):
+        """Remove value after given value and return."""
+        node = self._get(value)
+        if not node.after:
+            raise ValueError("No value after given value.")
+
+        to_return = node.after
+        node.after = to_return.after
+
+        self._size -= 1
+
+        return to_return.value
+
+    def _get(self, value):
+        """Get a _Node object with the given value."""
+        node = self._first
+        while node:
+            if node.value == value:
+                return node
+            node = node.after
+
+        raise ValueError(f"Given value ({value}) does not exist in LinkedList.")
+
+    def __contains__(self, value):
+        try:
+            self._get(value)
+        except ValueError:
+            return False
+        else:
+            return True
+
+    def __iter__(self):
+        return LinkedListIterator(self._first)
+
+    def __str__(self):
+        list_of_values = list(self.__iter__())
+        return str(list_of_values)
+
+    def __len__(self):
+        return self._size
+
+
+if __name__ == '__main__':
+    linked_list = LinkedList(1, 2, 3, 4)
+
+    print(linked_list)
+    print(len(linked_list))
+
+    linked_list.append(5)
+    print(linked_list)
+    print(len(linked_list))
+
+    value = linked_list.remove_first()
+    print(value)
+    print(linked_list)
+    print(len(linked_list))
+
+
+    value = linked_list.remove_after(3)
+    print(value)
+    print(linked_list)
+    print(len(linked_list))
+
+    linked_list.insert_after(3, value)
+    print(linked_list)
+    print(len(linked_list))
+
+    linked_list.insert_first(1)
+    print(linked_list)
+    print(len(linked_list))
+
+    print(1 in linked_list)
+
+    for elem in linked_list:
+        print(elem)
+
+    print(linked_list.is_empty)
+    print(len(linked_list))
+
+    while linked_list:
+        linked_list.remove_first()
+
+    print(linked_list)
+    print(len(linked_list))
+
+    linked_list.append(154)
+    print(linked_list)
+    print(len(linked_list))
+
+    new_linked_list = LinkedList()
+
+    print(new_linked_list.is_empty)
+
+    new_linked_list.insert_first(54)
+    print(new_linked_list)
+    print(len(new_linked_list))
+
+    new_linked_list.extend((1, 4, 7, 3, 1))
+    print(new_linked_list)
+    print(len(new_linked_list))
+
+    try:
+        linked_list.insert_after("hello", 4)
+        LinkedList().remove_first()
+        linked_list.remove_after("hey buuuuddy")
+    except ValueError:
+        pass
+    else:
+        print("One of these didn't raise correctly hmmm")
+
