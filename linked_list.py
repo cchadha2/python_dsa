@@ -1,3 +1,4 @@
+"""Linked List implementation."""
 import functools
 from dataclasses import dataclass
 from typing import Type
