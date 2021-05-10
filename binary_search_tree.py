@@ -31,11 +31,13 @@ class BinarySearchTree:
 
     @property
     def min(self):
-       return self._check_min_max(attr="left").key
+        _, minimum = self._check_extreme("left")
+        return minimum.key
 
     @property
     def max(self):
-        return self._check_min_max(attr="right").key
+        _, maximum = self._check_extreme("right")
+        return maximum.key
 
     def floor(self, key):
         """Find largest key smaller than or equal to `key`"""
@@ -68,7 +70,7 @@ class BinarySearchTree:
         extreme = self._delete_extreme("right")
         return extreme if not extreme else extreme.key
 
-        # TODO: This should navigate the tree itself to save time.
+    # TODO: This should navigate the tree itself to save time.
     def keys(self, minimum, maximum):
         """Find keys between minimum and maximum keys (inclusive)."""
         for key in self._keys:
@@ -192,22 +194,22 @@ class BinarySearchTree:
             return extreme
 
         # Otherwise delete the extreme node.
-        parent = None
-        while getattr(extreme, direction):
-            parent = extreme
-            extreme = getattr(extreme, direction)
+        parent, extreme = self._check_extreme(direction)
         setattr(parent, direction, getattr(extreme, other_direction))
         self._size -= 1
         self._keys.remove(extreme.key)
 
         return extreme
 
-    def _check_min_max(self, attr):
+    def _check_extreme(self, direction):
         """Find min or max node in tree"""
-        node = self._root
-        while getattr(node, attr):
-            node = getattr(node, attr)
-        return node
+        extreme = self._root
+        parent = None
+        while getattr(extreme, direction):
+            parent = extreme
+            extreme = getattr(extreme, direction)
+
+        return parent, extreme
 
     def __getitem__(self, key):
         """Get value for given key."""
@@ -259,10 +261,6 @@ if __name__ == "__main__":
     print(len(tree))
     print(tree.max)
     print(tree.min)
-
-    for key in tree:
-        print(key)
-
     print()
 
     for key in tree.keys("b", "t"):
