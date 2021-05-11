@@ -22,21 +22,39 @@ class _Node:
     def __gt__(self, key):
         return self.key > key
 
+    def __le__(self, key):
+        return self.key <= key
+
+    def __ge__(self, key):
+        return self.key >= key
+
+
 class BinarySearchTree:
-    """Binary Search Tree iterative implementation to avoid Python's recursion limit."""
-    def __init__(self):
-        self._root = None
-        self._size = 0
-        self._keys = set()
+    """Binary Search Tree (mostly) iterative implementation to avoid Python's recursion limit.
+
+    Python's recursion limit is set to 1000 by default. If each operation in
+    this data structure is O(logN) => 2**1000 calls to reach the limit (a 302 decimal
+    digit number) where N is the number of nodes in the tree. This means that this limit will
+    likely never be reached. However, just to be extra super duper safe, (most) methods here
+    are implemented iteratively in O(logN) time. Note that `select` is made inefficient
+    due to this design choice and `keys` deviates from the design as it required
+    a recursive implementation.
+    """
+    def __new__(cls, *args, **kwargs):
+        instance = super(BinarySearchTree, cls).__new__(cls, *args, **kwargs)
+        instance._root = None
+        instance._size = 0
+        instance._keys = set()
+        return instance
 
     @property
     def min(self):
-        _, minimum = self._check_extreme("left")
+        _, minimum = self._check_extreme(self._root, "left")
         return minimum.key
 
     @property
     def max(self):
-        _, maximum = self._check_extreme("right")
+        _, maximum = self._check_extreme(self._root, "right")
         return maximum.key
 
     def floor(self, key):
@@ -47,43 +65,84 @@ class BinarySearchTree:
         """Find smallest key larger than or equal to `key`"""
         return self._closest(key, direction="right").key
 
-    # TODO: Finish this correctly (by navigating tree).
     def rank(self, key):
         """Find number of keys less than key."""
-        closest = self._closest(key, direction="left")
-        if not closest:
-            return 0
+        # Initialise number of keys to remove from final result
+        # based on whether `key` is in the tree.
+        num = 1 if key in self._keys else 0
 
-        # Initialise number of keys based on whether the closest node found
-        # is the node with key `key`.
-        num = 0 if closest.key == key else 1
+        # Remove the key itself from number of keys.
+        return len(self.keys(self.min, key)) - num
 
-        return len(tuple(self.keys(self.min, key)))
+    def select(self, rank):
+        """Find key with specified rank...in O((logN)**2) time :("""
+        if rank >= self._size:
+            raise ValueError("Rank exceeds number of items in tree")
+
+        # Doing this iteratively, requires a O(logN) operation to find
+        # rank of each node as we traverse the tree. This would be optimised
+        # by keeping track of the number of nodes in each subtree (on the _Node class itself)
+        # but would require recursive implementations of put and delete to update the sizes
+        # as they go.
+        node = self._root
+        while node:
+            node_rank = self.rank(node.key)
+            if node_rank > rank:
+                node = node.left
+            elif node_rank < rank:
+                node = node.right
+            else:
+                return node.key
 
     def delete_min(self):
         """Delete minimum node in tree."""
-        extreme = self._delete_extreme("left")
+        extreme = self._delete_extreme(self._root, "left")
+        self._size -= 1
+        self._keys.remove(extreme.key)
         return extreme if not extreme else extreme.key
 
     def delete_max(self):
         """Delete maximum node in tree."""
-        extreme = self._delete_extreme("right")
+        extreme = self._delete_extreme(self._root, "right")
+        self._size -= 1
+        self._keys.remove(extreme.key)
         return extreme if not extreme else extreme.key
 
-    # TODO: This should navigate the tree itself to save time.
-    def keys(self, minimum, maximum):
-        """Find keys between minimum and maximum keys (inclusive)."""
-        for key in self._keys:
-            if key >= minimum and key <= maximum:
-                yield key
+    def keys(self, minimum=None, maximum=None):
+        """Find keys between minimum and maximum keys (inclusive).
+
+        This is a recursive method unfortunately :(
+        """
+        if minimum is None and maximum is None:
+            return list(self._generate_keys(self._root, self.min, self.max))
+        elif (minimum is not None and maximum is None) or (minimum is None and maximum is not None):
+            raise ValueError("Both minimum and maximum must be set or neither")
+        else:
+            return list(self._generate_keys(self._root, minimum, maximum))
+
+    def _generate_keys(self, node, minimum, maximum):
+        """Recursive generator of keys in range provided."""
+        if not node:
+            return
+
+        if node > minimum:
+            yield from self._generate_keys(node.left, minimum, maximum)
+        if node >= minimum and node <= maximum:
+            yield node.key
+        if node < maximum:
+            yield from self._generate_keys(node.right, minimum, maximum)
 
     def _get(self, key):
         """Get node for given key."""
+        # Parent is used by _delete method to update links.
+        parent = None
         node = self._root
         while node:
             if node > key:
+                parent = node
                 node = node.left
             elif node < key:
+                parent = node
                 node = node.right
             else:
                 break
@@ -91,7 +150,7 @@ class BinarySearchTree:
         if node != key:
             raise KeyError("given key is not in tree")
 
-        return node
+        return parent, node
 
     def _put(self, key, value):
         """Put value at given key."""
@@ -123,37 +182,50 @@ class BinarySearchTree:
 
     def _delete(self, key):
         """Delete node at given key."""
-        def delete_node(parent, side, node):
-            """Delete node from tree."""
-            if node.right:
-                setattr(parent, side, node.right)
-                setattr(parent, side + ".left", node.left)
-            elif node.left:
-                setattr(parent, side, node.left)
-            else:
-                setattr(parent, side, None)
+        if self._size == 1:
+            self.delete_min()
+            return
 
-            self._keys.remove(key)
+        def remove_node(node, direction, parent=None):
             self._size -= 1
-
-        node = self._root
-
-        while node:
-            if node > key:
-                next_node = node.left
-                if next_node == key:
-                    delete_node(node, "left", next_node)
-                    return
-                node = next_node
-            elif node < key:
-                next_node = node.right
-                if next_node == key:
-                    delete_node(node, "right", next_node)
-                    return
-                node = next_node
+            self._keys.remove(node.key)
+            if parent:
+                node = getattr(node, direction)
+                setattr(parent, direction, node)
             else:
-                delete_node(self, "_root", node)
+                self._root = getattr(self._root, direction)
+
+        parent, node_to_delete = self._get(key)
+        if parent is None or parent.right == node_to_delete:
+            if not node_to_delete.left:
+                remove_node(node_to_delete, "right", parent)
                 return
+            elif not node_to_delete.right:
+                remove_node(node_to_delete, "left", parent)
+                return
+        else:
+            if not node_to_delete.left:
+                remove_node(node_to_delete, "left", parent)
+                return
+            elif not node_to_delete.right:
+                remove_node(node_to_delete, "right", parent)
+                return
+
+        # The successor of the node to delete is the smallest node in its right subtree.
+        successor = self._delete_extreme(node_to_delete.right, "left", parent=node_to_delete)
+        successor.left, successor.right = node_to_delete.left, node_to_delete.right
+
+        if parent:
+            if parent.right == node_to_delete:
+                parent.right = successor
+            else:
+                parent.left = successor
+            self._size -= 1
+            self._keys.remove(parent.key)
+        else:
+            self._size -= 1
+            self._keys.remove(self._root.key)
+            self._root = successor
 
     def _closest(self, key, direction):
         """Find closest key larger/smaller than or equal to `key`"""
@@ -174,46 +246,43 @@ class BinarySearchTree:
                     closest = node
                 node = getattr(node, other_direction)
             else:
-                return closest
+                return node
 
         return closest
 
-    def _delete_extreme(self, direction):
-        if not self._root:
+    def _delete_extreme(self, node, direction, parent=None):
+        if not self._size:
+            raise ValueError("Tree is empty")
+
+        if not node:
             return
 
-        extreme = self._root
+        # Check which way to go.
         other_direction = "right" if direction == "left" else "left"
 
         # Check if node to be deleted is the root node.
-        if self._size == 1 or not getattr(self._root, direction):
+        if self._size == 1 or (node == self._root.key and not getattr(node, direction)):
             extreme = self._root
-            self._root = getattr(self._root, other_direction, None)
-            self._size -= 1
-            self._keys.remove(extreme.key)
+            self._root = getattr(node, other_direction, None)
             return extreme
 
         # Otherwise delete the extreme node.
-        parent, extreme = self._check_extreme(direction)
+        parent, extreme = self._check_extreme(node, direction, parent)
         setattr(parent, direction, getattr(extreme, other_direction))
-        self._size -= 1
-        self._keys.remove(extreme.key)
-
         return extreme
 
-    def _check_extreme(self, direction):
+    def _check_extreme(self, node, direction, parent=None):
         """Find min or max node in tree"""
-        extreme = self._root
-        parent = None
-        while getattr(extreme, direction):
-            parent = extreme
-            extreme = getattr(extreme, direction)
+        while getattr(node, direction):
+            parent = node
+            node = getattr(node, direction)
 
-        return parent, extreme
+        return parent, node
 
     def __getitem__(self, key):
         """Get value for given key."""
-        return self._get(key)
+        _, node_key = self._get(key)
+        return node_key
 
     def __setitem__(self, key, value):
         """Set value at given key."""
@@ -231,6 +300,7 @@ class BinarySearchTree:
 
     def __contains__(self, key):
         return key in self._keys
+
 
 if __name__ == "__main__":
     tree = BinarySearchTree()
@@ -278,6 +348,9 @@ if __name__ == "__main__":
         tree["v"]
     except KeyError:
         print("v has been successfully deleted")
+    else:
+        print("v was not deleted")
+    print(tree.keys())
 
     print(len(tree))
     print(tree.delete_min())
@@ -286,9 +359,14 @@ if __name__ == "__main__":
     except KeyError:
         print("a has been successfully deleted")
         print(len(tree))
-        print(*tree)
     else:
         print("a was not deleted!")
+
+    print(*tree)
+    print(f"rank of 'm': {tree.rank('m')}")
+    print(f"key with rank 3: {tree.select(3)}")
+    print(tree.select(5))
+    print(tree.select(1))
 
     print(tree.delete_max())
     try:
@@ -301,16 +379,50 @@ if __name__ == "__main__":
         print("z was not deleted!")
     tree = BinarySearchTree()
     tree["a"] =  1
+    print(tree._root)
     print(len(tree))
 
     del tree["a"]
     print(len(tree))
     print(*tree)
     print("a" in tree)
-    print(tree.delete_max())
+    try:
+        print(tree.delete_max())
+    except ValueError:
+        print("delete_max is a-ok")
+    else:
+        print("delete_max not working right!")
+
+    print(tree._size)
+
     tree["a"] =  1
+    print(tree._size)
     print(tree.delete_max())
+
     tree["a"] =  1
+    print(tree._size)
     print(tree.delete_min())
+    print(tree._size)
     print(*tree)
 
+    try:
+        list(tree.keys("a"))
+    except ValueError:
+        print("keys method raised ValueError correctly")
+
+
+    tree = BinarySearchTree()
+    for value, key in enumerate(("b", "a", "z", "v", "e", "f")):
+        tree[key] = value
+
+    print(*tree)
+
+    del tree["b"]
+    print(vars(tree))
+
+    for key in tree.keys():
+        print(tree[key])
+        print(vars(tree))
+        del tree[key]
+
+    print(len(tree))
