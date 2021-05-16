@@ -153,7 +153,18 @@ class LinkedList:
             return True
 
     def __iter__(self):
-        return LinkedListIterator(self._first)
+        # Can return an object of LinkedListIterator but more pythonic to use a generator as
+        # __iter__ will simply return a generator object which already has an __iter__ and
+        # __next__ method.
+        # return LinkedListIterator(self._first)
+
+        # Generator implementation.
+        next_node = self._first
+
+        while next_node:
+            current_node = next_node
+            next_node = current_node.after
+            yield current_node.value
 
     def __str__(self):
         return f"[{', '.join(str(elem) for elem in self.__iter__())}]"
@@ -193,6 +204,8 @@ if __name__ == '__main__':
 
     print(1 in linked_list)
 
+    print(linked_list.__iter__())
+    print(next(linked_list.__iter__()))
     for elem in linked_list:
         print(elem)
 
@@ -223,12 +236,25 @@ if __name__ == '__main__':
 
     try:
         linked_list.insert_after("hello", 4)
+    except NoSuchElementError:
+        pass
+    else:
+        print("One of these didn't raise correctly hmmm")
+
+    try:
         LinkedList().remove_first()
+    except NoSuchElementError:
+        pass
+    else:
+        print("One of these didn't raise correctly hmmm")
+
+    try:
         linked_list.remove_after("hey buuuuddy")
     except NoSuchElementError:
         pass
     else:
         print("One of these didn't raise correctly hmmm")
 
+    print(linked_list)
     print("hello" in linked_list)
 
