@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from typing import Type
 
 
+class NoSuchElementError(Exception):
+    """Used when attempting to pop from empty stack"""
+
+
 @dataclass
 class _Node:
     """A private class used to hold data within LinkedList."""
@@ -73,7 +77,6 @@ class LinkedList:
     def insert_first(self, value):
         """Insert given value at start of LinkedList"""
         node = _Node(value)
-
         node.after = self._first
         self._first = node
         self._size += 1
@@ -117,7 +120,7 @@ class LinkedList:
         node = self._get(value)
 
         if not node.after:
-            raise ValueError("No value after given value.")
+            raise NoSuchElementError("No value after given value.")
 
         to_return = node.after
         node.after = to_return.after
@@ -129,7 +132,7 @@ class LinkedList:
     def _raise_empty_error(self):
         """Raise a ValueError if LinkedList is empty."""
         if self.is_empty:
-            raise ValueError("No values in LinkedList.")
+            raise NoSuchElementError("No values in LinkedList.")
 
     def _get(self, value):
         """Get a _Node object with the given value."""
@@ -139,12 +142,12 @@ class LinkedList:
                 return node
             node = node.after
 
-        raise ValueError(f"Given value ({value}) does not exist in LinkedList.")
+        raise NoSuchElementError(f"Given value ({value}) does not exist in LinkedList.")
 
     def __contains__(self, value):
         try:
             self._get(value)
-        except ValueError:
+        except NoSuchElementError:
             return False
         else:
             return True
@@ -222,7 +225,7 @@ if __name__ == '__main__':
         linked_list.insert_after("hello", 4)
         LinkedList().remove_first()
         linked_list.remove_after("hey buuuuddy")
-    except ValueError:
+    except NoSuchElementError:
         pass
     else:
         print("One of these didn't raise correctly hmmm")

@@ -1,42 +1,23 @@
 # Queue implementation with deque.
-from collections import deque
-
-from linked_list import NoSuchElementError
+from linked_list import LinkedList, NoSuchElementError
 
 
-class Queue:
+class Queue(LinkedList):
 
     def __init__(self, *values):
-        self._queue = deque(values)
+        super().__init__(*values)
 
     def enqueue(self, value):
-        self._queue.append(value)
+        self.append(value)
 
     def dequeue(self):
-        if not self._queue:
-            raise NoSuchElementError("Queue is empty")
-
-        return self._queue.popleft()
+        return self.remove_first()
 
     def peek(self):
-        if not self._queue:
+        if self.is_empty:
             raise NoSuchElementError("Queue is empty")
 
-        return self._queue[0]
-
-    @property
-    def is_empty(self):
-        return len(self._queue) == 0
-
-    def __len__(self):
-        return len(self._queue)
-
-    def __iter__(self):
-        # Iterate over queue in FIFO order.
-        return iter(self._queue)
-
-    def __str__(self):
-        return f"[{', '.join(str(value) for value in self._queue)}]"
+        return self._first.value
 
 
 if __name__ == "__main__":

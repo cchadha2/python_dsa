@@ -1,9 +1,4 @@
 # Trie implementation.
-
-# Extended ASCII.
-RADIX = 256
-
-
 class Node:
     def __init__(self, radix, idx=None, value=None):
         self.idx = idx
@@ -16,9 +11,11 @@ class Node:
 
 
 class Trie:
-    def __init__(self, radix):
-        self.radix = radix
-        self._root = Node(radix)
+    # Extended ASCII.
+    radix = 256
+
+    def __init__(self):
+        self._root = Node(self.radix)
         self._size = 0
 
     def __getitem__(self, key):
@@ -154,7 +151,7 @@ class Trie:
 
 
 if __name__ == "__main__":
-    trie = Trie(RADIX)
+    trie = Trie()
     text = "hello"
 
     print(trie)
@@ -175,7 +172,7 @@ if __name__ == "__main__":
 
     print(bool(trie))
 
-    print(bool(Trie(RADIX)))
+    print(bool(Trie()))
 
     trie["he"] = 2
 
@@ -202,7 +199,7 @@ if __name__ == "__main__":
     print(trie.keys_that_match("fly"))
     print(trie.keys_that_match("zebra"))
 
-    trie = Trie(RADIX)
+    trie = Trie()
     trie["hello"] = 5
     trie["he"] = 2
     trie["help"] = 1
