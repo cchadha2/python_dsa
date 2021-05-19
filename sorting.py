@@ -57,19 +57,20 @@ def merge_sort(seq):
     aux = [None] * len(seq)
 
     def merge(seq, lo, mid, hi):
-        """Merge subarrays"""
+        """Merge subarrays using auxiliary array to find minimum value at each index."""
         first_seq_start, second_seq_start = lo, mid + 1
-        aux[lo:hi] = seq[lo:hi]
 
-        for idx in range(lo, hi + 1):
+        seq_slice = slice(lo, hi + 1)
+        aux[seq_slice] = seq[seq_slice]
+        for idx in range(seq_slice.start, seq_slice.stop):
             if first_seq_start > mid:
                 seq[idx] = aux[second_seq_start]
                 second_seq_start += 1
             elif second_seq_start > hi:
-                seq[idx] = first_seq_start
+                seq[idx] = aux[first_seq_start]
                 first_seq_start += 1
             elif aux[second_seq_start] < aux[first_seq_start]:
-               seq[idx] = second_seq_start
+               seq[idx] = aux[second_seq_start]
                second_seq_start += 1
             else:
                 seq[idx] = aux[first_seq_start]
@@ -79,14 +80,12 @@ def merge_sort(seq):
         """Recursively split seq into two subarrays and sort (stable)."""
         if hi <= lo:
             return
-        #mid = lo + (hi - lo) // 2
         mid = (hi + lo) // 2
-        print(lo, mid, hi)
         sort(seq, lo=lo, hi=mid)
         sort(seq, lo=mid + 1, hi=hi)
         merge(seq, lo, mid, hi)
 
-    sort(seq, lo=0, hi=len(seq))
+    sort(seq, lo=0, hi=len(seq) - 1)
     return seq
 
 # O(nlogn) average case. Generally faster than mergesort due to less data movement. O(n**2) at worst.
@@ -100,15 +99,17 @@ def quick_sort(seq):
 def three_way_quick_sort(seq):
     """Quicksort variation used to quickly sort sequences with duplicate elements"""
 
+
+def main(seq):
+    """Runs each sort on seq"""
+    print(f"Selection sort: {selection_sort(seq)}")
+    print(f"Insertion sort: {insertion_sort(seq)}")
+    print(f"Shell sort: {shell_sort(seq)}")
+    print(f"Merge sort: {merge_sort(seq)}", end="\n\n")
+
+
 if __name__ == "__main__":
-    arr = [4, 3, 1, 5, 6]
+    main([4, 3, 1, 5, 6])
 
-    print(selection_sort(arr))
-    print(insertion_sort(arr))
-    print(shell_sort(arr))
-    print(merge_sort(arr))
+    main([8, 2, 6, 3, 1, 5, 7, 8, 44, 1, 3, 344, 5, 7, 2, 3, 9, 1, 2, 3, 4])
 
-    arr = [8, 2, 6, 3, 1, 5, 7, 8, 44, 1, 3, 344, 5, 7, 2, 3, 9, 1, 2, 3, 4]
-    print(selection_sort(arr))
-    print(insertion_sort(arr))
-    print(shell_sort(arr))
