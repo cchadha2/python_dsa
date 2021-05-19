@@ -1,12 +1,12 @@
 import math
 import random
+from statistics import mean
+from timeit import repeat
 
-from handy_decorators import timer
+random.seed(7)
 
-random.seed("My fun sorting module")
 
 # O(n**2). O(1) space. Not stable.
-@timer
 def selection_sort(seq):
     """For each index in seq, swap with minimum value from the remaining values."""
     for idx, elem in enumerate(seq):
@@ -22,7 +22,6 @@ def selection_sort(seq):
 
 
 # O(n**2). O(1) space. Stable sort.
-@timer
 def insertion_sort(seq):
     """For each element, compare and swap with elements to the left."""
     for idx, elem in enumerate(seq):
@@ -40,7 +39,6 @@ def insertion_sort(seq):
 
 
 # O(n**3/2) or thereabouts. Not necessarily quadratic. Not stable.
-@timer
 def shell_sort(seq):
     """Initalize h as a steadily large value, h-sort, and steadily decrease h to completely sort."""
     h = 1
@@ -60,7 +58,6 @@ def shell_sort(seq):
 
 
 # O(nlogn) guaranteed worst case and O(n) space for auxiliary array.
-@timer
 def merge_sort(seq):
     aux = [None] * len(seq)
 
@@ -77,12 +74,12 @@ def merge_sort(seq):
         """Merge subarrays using auxiliary array to find minimum value at each index."""
         first_seq_start, second_seq_start = lo, mid + 1
 
-        seq_slice = slice(lo, hi + 1)
-        aux[seq_slice] = seq[seq_slice]
-        for idx in range(seq_slice.start, seq_slice.stop):
+        aux[lo : hi + 1] = seq[lo : hi + 1]
+        for idx in range(lo, hi + 1):
             if first_seq_start > mid:
                 seq[idx] = aux[second_seq_start]
                 second_seq_start += 1
+
             elif second_seq_start > hi:
                 seq[idx] = aux[first_seq_start]
                 first_seq_start += 1
@@ -99,7 +96,6 @@ def merge_sort(seq):
 
 # O(nlogn) average case. Generally faster than mergesort due to less data movement. O(n**2) at worst.
 # Between O(logn) and O(n) space complexity due to recursive sort calls.
-@timer
 def quick_sort(seq):
     """Scan seq from both left and right (converging in center) and sort by exchanging values."""
     # Shuffle seq to avoid worst case time complexity of O(n**2).
@@ -146,7 +142,6 @@ def quick_sort(seq):
 
 # O(n) best case with equal keys. O(n**2) worst case and O(nlogn) average case (same as quicksort).
 # Uses O(logn) space for recursion.
-@timer
 def three_way_quick_sort(seq):
     """Quicksort variation used to quickly sort sequences with duplicate elements"""
 
@@ -154,19 +149,30 @@ def three_way_quick_sort(seq):
 def main(seq):
     """Runs each sort on seq"""
     system_sort = sorted(seq)
+    num_times = 1
+    rep = 10
+
+    def time_stats(sort_type):
+        times = repeat(setup=f'from __main__ import {sort_type}',
+                       stmt=f'{sort_type}({seq})',
+                       repeat=rep, number=num_times)
+        return f"Min time {min(times)}, Mean time {mean(times)}, Max time {max(times)}"
+
+    print(f"Call sorting function {num_times} times and repeat {rep} time(s) each for a total of "
+          f"{num_times * rep} calls")
     print("Sorted?")
-    print(f"Unsorted seq: {seq == system_sort}")
-    print(f"Selection sort: {selection_sort(seq) == system_sort}")
-    print(f"Insertion sort: {insertion_sort(seq) == system_sort}")
-    print(f"Shell sort: {shell_sort(seq) == system_sort}")
-    print(f"Merge sort: {merge_sort(seq) == system_sort}")
-    print(f"Quick sort: {quick_sort(seq) == system_sort}", end="\n\n")
+    print(f"Unsorted seq: {seq == system_sort}, number of elements: {len(seq)}")
+    print(f"Selection sort: {selection_sort(seq) == system_sort}, time: {time_stats('selection_sort')}")
+    print(f"Insertion sort: {insertion_sort(seq) == system_sort}, time: {time_stats('insertion_sort')}")
+    print(f"Shell sort: {shell_sort(seq) == system_sort}, time: {time_stats('shell_sort')}")
+    print(f"Merge sort: {merge_sort(seq) == system_sort}, time: {time_stats('merge_sort')}")
+    print(f"Quick sort: {quick_sort(seq) == system_sort}, time: {time_stats('quick_sort')}", end="\n\n")
 
 
 
 if __name__ == "__main__":
-    main([4, 3, 1, 5, 6])
-    main([8, 2, 6, 3, 1, 5, 7, 8, 44, 1, 3, 344, 5, 7, 2, 3, 9, 1, 2, 3, 4])
-    main([random.randint(0, 100000) for _ in range(3000)])
-    main([random.randint(0, 100000000) for _ in range(10000)])
+    main([random.randint(0, 10**8) for _ in range(5)])
+    main([random.randint(0, 10**8) for _ in range(50)])
+    main([random.randint(0, 10**8) for _ in range(5000)])
+    main([random.randint(0, 10**8) for _ in range(10000)])
 
