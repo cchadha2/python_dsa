@@ -3,7 +3,7 @@ import random
 from statistics import mean
 from timeit import repeat
 
-random.seed(7)
+random.seed(77)
 
 
 # O(n**2). O(1) space. Not stable.
@@ -28,12 +28,14 @@ def insertion_sort(seq):
         other_idx = idx - 1
         while other_idx >= 0:
             other_elem = seq[other_idx]
-            if elem > other_elem:
+            if other_elem < elem:
                 break
 
-            # Swap elements.
-            seq[idx], seq[other_idx] = other_elem, elem
+            seq[other_idx + 1] = other_elem
             other_idx -= 1
+
+        if elem < seq[other_idx + 1]:
+            seq[other_idx + 1] = elem
 
     return seq
 
@@ -58,17 +60,22 @@ def shell_sort(seq):
 
 
 # O(nlogn) guaranteed worst case and O(n) space for auxiliary array.
-def merge_sort(seq):
+def merge_sort(seq, cutoff=0):
+    """Cut off to insertion sort when seq contains less than or equal to specified number of elements."""
     aux = [None] * len(seq)
 
     def sort(seq, lo, hi):
         """Recursively split seq into two subarrays and sort (stable)."""
         if hi <= lo:
             return
-        mid = (hi + lo) // 2
-        sort(seq, lo=lo, hi=mid)
-        sort(seq, lo=mid + 1, hi=hi)
-        merge(seq, lo, mid, hi)
+
+        if hi - lo <= cutoff:
+            seq[lo : hi + 1] = insertion_sort(seq[lo : hi + 1])
+        else:
+            mid = (hi + lo) // 2
+            sort(seq, lo=lo, hi=mid)
+            sort(seq, lo=mid + 1, hi=hi)
+            merge(seq, lo, mid, hi)
 
     def merge(seq, lo, mid, hi):
         """Merge subarrays using auxiliary array to find minimum value at each index."""
@@ -148,31 +155,57 @@ def three_way_quick_sort(seq):
 
 def main(seq):
     """Runs each sort on seq"""
+    # Sort individually ahead of time to check correctness.
     system_sort = sorted(seq)
-    num_times = 1
-    rep = 10
+    selection = selection_sort(seq.copy())
+    insertion = insertion_sort(seq.copy())
+    shell = shell_sort(seq.copy())
+    merge = merge_sort(seq.copy())
+    cutoff = 10
+    merge_with_cutoff = merge_sort(seq.copy(), cutoff)
+    quick = quick_sort(seq.copy())
 
-    def time_stats(sort_type):
-        times = repeat(setup=f'from __main__ import {sort_type}',
-                       stmt=f'{sort_type}({seq})',
-                       repeat=rep, number=num_times)
-        return f"Min time {min(times)}, Mean time {mean(times)}, Max time {max(times)}"
+    num_times = 10
+    rep = 1
 
-    print(f"Call sorting function {num_times} times and repeat {rep} time(s) each for a total of "
+    def time_stats(sort_type, **kwargs):
+        stmt = f"{sort_type}({seq.copy()}, {', '.join('='.join((str(k), str(v))) for k, v in kwargs.items())})" if kwargs else f'{sort_type}({seq.copy()})'
+        if sort_type != "sorted":
+            times = repeat(setup=f'from __main__ import {sort_type}',
+                           stmt=stmt,
+                           repeat=rep, number=num_times)
+        else:
+            times = repeat(stmt=f"sorted({seq.copy()})", repeat=rep, number=num_times)
+        return f"Min time {min(times)}"
+
+    print(f"Call sorting function {num_times} time(s) and repeat {rep} time(s) each for a total of "
           f"{num_times * rep} calls")
-    print("Sorted?")
+    print("Type of sort: Sorted or not: Min time")
     print(f"Unsorted seq: {seq == system_sort}, number of elements: {len(seq)}")
-    print(f"Selection sort: {selection_sort(seq) == system_sort}, time: {time_stats('selection_sort')}")
-    print(f"Insertion sort: {insertion_sort(seq) == system_sort}, time: {time_stats('insertion_sort')}")
-    print(f"Shell sort: {shell_sort(seq) == system_sort}, time: {time_stats('shell_sort')}")
-    print(f"Merge sort: {merge_sort(seq) == system_sort}, time: {time_stats('merge_sort')}")
-    print(f"Quick sort: {quick_sort(seq) == system_sort}, time: {time_stats('quick_sort')}", end="\n\n")
-
+    print(f"System sort: True : {time_stats('sorted')}")
+    print(f"Selection sort: {selection == system_sort} : {time_stats('selection_sort')}")
+    print(f"Insertion sort: {insertion == system_sort} : {time_stats('insertion_sort')}")
+    print(f"Shell sort: {shell == system_sort} : {time_stats('shell_sort')}")
+    print(f"Merge sort: {merge == system_sort} : {time_stats('merge_sort')}")
+    print(f"Merge sort with cutoff: {merge_with_cutoff == system_sort} : {time_stats('merge_sort', cutoff=cutoff)}")
+    print(f"Quick sort: {quick == system_sort} : {time_stats('quick_sort')}", end="\n\n")
 
 
 if __name__ == "__main__":
-    main([random.randint(0, 10**8) for _ in range(5)])
-    main([random.randint(0, 10**8) for _ in range(50)])
+    print("Random array")
+    main([random.randint(0, 10**4) for _ in range(5)])
+    print("Random array")
+    main([random.randint(0, 10**3) for _ in range(50)])
+    print("Random array with duplicates")
+    main([random.randint(0, 50) for _ in range(500)])
+    print("Sorted array")
+    main([elem for elem in range(500)])
+    print("Random array")
     main([random.randint(0, 10**8) for _ in range(5000)])
-    main([random.randint(0, 10**8) for _ in range(10000)])
+    print("Reverse array")
+    main([elem for elem in range(5000, 0, -1)])
+    print("Random array")
+    main([random.randint(0, 10**20) for _ in range(10000)])
+    print("Reverse array")
+    main([elem for elem in range(10000, 0, -1)])
 
