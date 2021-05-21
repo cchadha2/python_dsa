@@ -1,6 +1,5 @@
 import math
 import random
-from statistics import mean
 from timeit import repeat
 
 random.seed(77)
@@ -103,7 +102,7 @@ def merge_sort(seq, cutoff=0):
 
 # O(nlogn) average case. Generally faster than mergesort due to less data movement. O(n**2) at worst.
 # Between O(logn) and O(n) space complexity due to recursive sort calls.
-def quick_sort(seq):
+def quick_sort(seq, cutoff=0):
     """Scan seq from both left and right (converging in center) and sort by exchanging values."""
     # Shuffle seq to avoid worst case time complexity of O(n**2).
     random.shuffle(seq)
@@ -112,9 +111,13 @@ def quick_sort(seq):
         """Recursively sort subarrays of seq split on partition value."""
         if hi <= lo:
             return
-        idx = partition(seq, lo, hi)
-        sort(seq, lo, idx - 1)
-        sort(seq, idx + 1, hi)
+
+        if hi - lo <= cutoff:
+            seq[lo : hi + 1] = insertion_sort(seq[lo : hi + 1])
+        else:
+            idx = partition(seq, lo, hi)
+            sort(seq, lo, idx - 1)
+            sort(seq, idx + 1, hi)
 
     def partition(seq, lo, hi):
         """Find partition index which is in correct sorted place."""
@@ -147,10 +150,78 @@ def quick_sort(seq):
     sort(seq, 0, len(seq) - 1)
     return seq
 
+
 # O(n) best case with equal keys. O(n**2) worst case and O(nlogn) average case (same as quicksort).
 # Uses O(logn) space for recursion.
-def three_way_quick_sort(seq):
+def three_way_quick_sort(seq, cutoff=0):
     """Quicksort variation used to quickly sort sequences with duplicate elements"""
+    # Shuffle seq to avoid worst case time complexity of O(n**2).
+    random.shuffle(seq)
+
+    def sort(seq, lo, hi):
+        """Puts keys equal to the partitioning element together in sorted order."""
+        if hi < lo:
+            return
+
+        if hi - lo <= cutoff:
+            seq[lo : hi + 1] = insertion_sort(seq[lo : hi + 1])
+        else:
+            partition_value = seq[lo]
+            partition_idx, idx, from_right = lo, lo + 1, hi
+            while idx <= from_right:
+                # Swap partition value with current index value if it is less than current index
+                # value. Then move the partition value pointer up one to match the swap.
+                if seq[idx] < partition_value:
+                    seq[partition_idx], seq[idx] = seq[idx], seq[partition_idx]
+                    partition_idx += 1
+                    idx += 1
+                # Otherwise, if the current index value is greater than the partition value, swap
+                # the current index value with the value in the index from_right. This brings any of
+                # the large values on the right hand side of the sequence to the left.
+                elif seq[idx] > partition_value:
+                    seq[from_right], seq[idx] = seq[idx], seq[from_right]
+                    from_right -= 1
+                # If the paritition value is equal to the current index value, advance to the next
+                # index.
+                else:
+                    idx += 1
+
+            # Partition index and from_right are the bounds of one value's indices. Repeat the sort
+            # for other values.
+            sort(seq, lo, partition_idx - 1)
+            sort(seq, from_right + 1, hi)
+
+    sort(seq, 0, len(seq) - 1)
+    return seq
+
+
+def heap_sort(seq):
+    """Constructs a heap and iterates over each element to sink it to correct positon"""
+    def sink(value, length):
+        while 2 * value <= length:
+            next_node = 2 * value
+            if next_node < length and seq[next_node] < seq[next_node + 1]:
+                next_node += 1
+            if not seq[value] < seq[next_node]:
+                break
+            seq[value], seq[next_node] = seq[next_node], seq[value]
+            value = next_node
+
+    # Construct the heap.
+    for value in range(len(seq) // 2, -1, -1):
+        sink(value, len(seq) - 1)
+
+    # Sort the elements by sinking each node to its correct position.
+    n = len(seq) - 1
+    while n > 0:
+        # Exchange bottom node with largest (root) node.
+        seq[0], seq[n] = seq[n], seq[0]
+        n -= 1
+        # Sink the new root node to its correct position while removing the exchanged root node from
+        # the sink (by above decrement of n).
+        sink(0, n)
+
+    return seq
 
 
 def main(seq):
@@ -161,34 +232,48 @@ def main(seq):
     insertion = insertion_sort(seq.copy())
     shell = shell_sort(seq.copy())
     merge = merge_sort(seq.copy())
+    quick = quick_sort(seq.copy())
+    heap = heap_sort(seq.copy())
+
+    # Improved sorts.
     cutoff = 10
     merge_with_cutoff = merge_sort(seq.copy(), cutoff)
-    quick = quick_sort(seq.copy())
+    quick_with_cutoff = quick_sort(seq.copy(), cutoff)
+    three_way_quick = three_way_quick_sort(seq.copy())
+    three_way_quick_with_cutoff = three_way_quick_sort(seq.copy(), cutoff)
 
     num_times = 10
     rep = 1
 
-    def time_stats(sort_type, **kwargs):
-        stmt = f"{sort_type}({seq.copy()}, {', '.join('='.join((str(k), str(v))) for k, v in kwargs.items())})" if kwargs else f'{sort_type}({seq.copy()})'
+    def min_time(sort_type, **kwargs):
+        stmt = ((f"{sort_type}({seq.copy()}, "
+                f"{', '.join('='.join((str(k), str(v))) for k, v in kwargs.items())})")
+                if kwargs else f"{sort_type}({seq.copy()})")
+
         if sort_type != "sorted":
             times = repeat(setup=f'from __main__ import {sort_type}',
                            stmt=stmt,
                            repeat=rep, number=num_times)
         else:
             times = repeat(stmt=f"sorted({seq.copy()})", repeat=rep, number=num_times)
-        return f"Min time {min(times)}"
+        return min(times)
 
     print(f"Call sorting function {num_times} time(s) and repeat {rep} time(s) each for a total of "
           f"{num_times * rep} calls")
-    print("Type of sort: Sorted or not: Min time")
+    print("Type of sort: Sorted or not: Min time (seconds)")
     print(f"Unsorted seq: {seq == system_sort}, number of elements: {len(seq)}")
-    print(f"System sort: True : {time_stats('sorted')}")
-    print(f"Selection sort: {selection == system_sort} : {time_stats('selection_sort')}")
-    print(f"Insertion sort: {insertion == system_sort} : {time_stats('insertion_sort')}")
-    print(f"Shell sort: {shell == system_sort} : {time_stats('shell_sort')}")
-    print(f"Merge sort: {merge == system_sort} : {time_stats('merge_sort')}")
-    print(f"Merge sort with cutoff: {merge_with_cutoff == system_sort} : {time_stats('merge_sort', cutoff=cutoff)}")
-    print(f"Quick sort: {quick == system_sort} : {time_stats('quick_sort')}", end="\n\n")
+    print(f"System sort: True : {min_time('sorted')}")
+    print(f"Selection sort: {selection == system_sort} : {min_time('selection_sort')}")
+    print(f"Insertion sort: {insertion == system_sort} : {min_time('insertion_sort')}")
+    print(f"Shell sort: {shell == system_sort} : {min_time('shell_sort')}")
+    print(f"Merge sort: {merge == system_sort} : {min_time('merge_sort')}")
+    print(f"Merge sort with cutoff: {merge_with_cutoff == system_sort} : {min_time('merge_sort', cutoff=cutoff)}")
+    print(f"Quick sort: {quick == system_sort} : {min_time('quick_sort')}")
+    print(f"Quick sort with cutoff: {quick_with_cutoff == system_sort} : {min_time('quick_sort', cutoff=cutoff)}")
+    print(f"Three way quick sort: {three_way_quick == system_sort} : {min_time('three_way_quick_sort')}")
+    print(f"Three way quick sort with cutoff: {three_way_quick_with_cutoff == system_sort} :"
+          f"{min_time('three_way_quick_sort', cutoff=cutoff)}")
+    print(f"Heap sort: {heap == system_sort} : {min_time('heap_sort')}", end="\n\n")
 
 
 if __name__ == "__main__":
@@ -202,6 +287,8 @@ if __name__ == "__main__":
     main([elem for elem in range(500)])
     print("Random array")
     main([random.randint(0, 10**8) for _ in range(5000)])
+    print("Random array with duplicates")
+    main([random.randint(0, 50) for _ in range(5000)])
     print("Reverse array")
     main([elem for elem in range(5000, 0, -1)])
     print("Random array")
