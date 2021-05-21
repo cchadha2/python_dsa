@@ -1,4 +1,5 @@
 """Binary Search Tree implementation."""
+from collections import deque
 from dataclasses import dataclass
 from operator import lt, gt
 from typing import Type, Union
@@ -47,6 +48,28 @@ class BinarySearchTree:
         instance._keys = set()
         return instance
 
+    def __getitem__(self, key):
+        """Get value for given key."""
+        _, node_key = self._get(key)
+        return node_key
+
+    def __setitem__(self, key, value):
+        """Set value at given key."""
+        self._put(key, value)
+
+    def __delitem__(self, key):
+        """Delete item at given key"""
+        self._delete(key)
+
+    def __len__(self):
+        return self._size
+
+    def __iter__(self):
+        return iter(self._keys)
+
+    def __contains__(self, key):
+        return key in self._keys
+
     @property
     def min(self):
         _, minimum = self._check_extreme(self._root, "left")
@@ -56,7 +79,6 @@ class BinarySearchTree:
     def max(self):
         _, maximum = self._check_extreme(self._root, "right")
         return maximum.key
-
     def floor(self, key):
         """Find largest key smaller than or equal to `key`"""
         return self._closest(key, direction="left").key
@@ -119,6 +141,35 @@ class BinarySearchTree:
             raise ValueError("Both minimum and maximum must be set or neither")
         else:
             return list(self._generate_keys(self._root, minimum, maximum))
+
+    def bfs(self):
+        """Breadth-first traversal of tree"""
+        if not self._root:
+            raise ValueError("No keys in tree")
+
+        queue = deque()
+        queue.append(self._root)
+        while queue:
+            node = queue.popleft()
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+            yield node.key
+
+    def dfs(self):
+        """Depth-first traversal of tree."""
+        if not self._root:
+            raise ValueError("No keys in tree")
+
+        stack = [self._root]
+        while stack:
+            node = stack.pop()
+            if node.right:
+                stack.append(node.right)
+            if node.left:
+                stack.append(node.left)
+            yield node.key
 
     def _generate_keys(self, node, minimum, maximum):
         """Recursive generator of keys in range provided."""
@@ -279,28 +330,6 @@ class BinarySearchTree:
 
         return parent, node
 
-    def __getitem__(self, key):
-        """Get value for given key."""
-        _, node_key = self._get(key)
-        return node_key
-
-    def __setitem__(self, key, value):
-        """Set value at given key."""
-        self._put(key, value)
-
-    def __delitem__(self, key):
-        """Delete item at given key"""
-        self._delete(key)
-
-    def __len__(self):
-        return self._size
-
-    def __iter__(self):
-        return iter(self._keys)
-
-    def __contains__(self, key):
-        return key in self._keys
-
 
 if __name__ == "__main__":
     tree = BinarySearchTree()
@@ -426,3 +455,18 @@ if __name__ == "__main__":
         del tree[key]
 
     print(len(tree))
+
+
+    tree = BinarySearchTree()
+    for value, key in enumerate(('m', 'g', 's', 'd', 'j', 'p', 'w', 'b', 'f', 'h', 'k', 'o', 'r',
+                                 'u', 'z')):
+        tree[key] = value
+
+    for key in tree.bfs():
+        print(key)
+
+    print()
+
+    for key in tree.dfs():
+        print(key)
+
