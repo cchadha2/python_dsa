@@ -1,3 +1,4 @@
+import heapq
 import math
 import random
 from timeit import repeat
@@ -223,6 +224,10 @@ def heap_sort(seq):
 
     return seq
 
+def heapq_sort(seq):
+    """Heap sort implementation using heapq module."""
+    heapq.heapify(seq)
+    return [heapq.heappop(seq) for _ in range(len(seq))]
 
 def main(seq):
     """Runs each sort on seq"""
@@ -234,6 +239,7 @@ def main(seq):
     merge = merge_sort(seq.copy())
     quick = quick_sort(seq.copy())
     heap = heap_sort(seq.copy())
+    heapq_result = heapq_sort(seq.copy())
 
     # Improved sorts.
     cutoff = 10
@@ -273,8 +279,8 @@ def main(seq):
     print(f"Three way quick sort: {three_way_quick == system_sort} : {min_time('three_way_quick_sort')}")
     print(f"Three way quick sort with cutoff: {three_way_quick_with_cutoff == system_sort} :"
           f"{min_time('three_way_quick_sort', cutoff=cutoff)}")
-    print(f"Heap sort: {heap == system_sort} : {min_time('heap_sort')}", end="\n\n")
-
+    print(f"Heap sort: {heap == system_sort} : {min_time('heap_sort')}")
+    print(f"Heap with heapq sort: {heapq_result == system_sort} : {min_time('heapq_sort')}", end="\n\n")
 
 if __name__ == "__main__":
     print("Random array")
