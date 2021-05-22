@@ -52,6 +52,16 @@ class MaxPQ:
         return str(self._heap)
 
 
+def heap_sort(heap):
+    sorted_list = [None] * len(heap)
+    idx = len(heap) - 1
+    while heap:
+        elem = heap.del_max()
+        sorted_list[idx] = elem
+        idx -= 1
+    return sorted_list
+
+
 if __name__ == "__main__":
     pq = MaxPQ('h', 'i', 'e', 's', 'r', 't', 'g', 'a', 'o', 'p', 'n')
     print(pq)
@@ -64,5 +74,8 @@ if __name__ == "__main__":
     pq = MaxPQ('h', 'i', 'e', 's', 'r', 't', 'g', 'a', 'o', 'p', 'n')
     pq.push('j')
     print(pq)
+    print(len(pq))
+
+    print(heap_sort(pq))
     print(len(pq))
 
