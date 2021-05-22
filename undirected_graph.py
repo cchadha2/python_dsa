@@ -35,28 +35,39 @@ class Graph:
         queue.append(source)
         while queue:
             vertex = queue.popleft()
-            yield vertex
+            # Duplicate vertices can be put on stack from two different adjacent vertices. To
+            # avoid an O(N) time check through stack each time we want to add an adjacent
+            # vertex, we instead check here if we've previously visited a popped vertex and allow
+            # duplicate vertices on the stack.
+            if vertex not in visited:
+                visited.add(vertex)
+                yield vertex
 
-            for adjacent_vertex in self.adj[vertex]:
-                if adjacent_vertex not in visited:
-                    queue.append(adjacent_vertex)
+                for adjacent_vertex in self.adj[vertex]:
+                    # Don't bother adding adjacent_vertex to stack if it has already been visited.
+                    if adjacent_vertex not in visited:
+                        queue.append(adjacent_vertex)
 
-            visited.add(vertex)
+
 
     def dfs(self, source):
         visited = set()
-
         stack = [source]
+
         while stack:
             vertex = stack.pop()
-            yield vertex
+            # Duplicate vertices can be put on stack from two different adjacent vertices. To
+            # avoid an O(N) time check through stack each time we want to add an adjacent
+            # vertex, we instead check here if we've previously visited a popped vertex and allow
+            # duplicate vertices on the stack.
+            if vertex not in visited:
+                visited.add(vertex)
+                yield vertex
 
-            for adjacent_vertex in self.adj[vertex]:
-                if adjacent_vertex not in visited:
-                    stack.append(adjacent_vertex)
-
-            visited.add(vertex)
-
+                for adjacent_vertex in self.adj[vertex]:
+                    # Don't bother adding adjacent_vertex to stack if it has already been visited.
+                    if adjacent_vertex not in visited:
+                        stack.append(adjacent_vertex)
 
     def __str__(self):
         return str(self.adj)
@@ -83,5 +94,7 @@ if __name__ == "__main__":
     print(graph.num_vertices)
     print(graph.num_edges)
 
+    graph.add_edge((5, 0))
+    # graph.add_edge((4, 3))
     print(*graph.dfs(2))
     print(*graph.bfs(2))
