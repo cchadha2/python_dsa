@@ -1,6 +1,9 @@
 # Undirected graph (adjacency sets representation to allow for quick checks of adjacent vertices).
 # Note that this implementation forbids parallel edges but does allow for the addition of vertices.
 # (as opposed to an adjacency lists representation).
+import collections
+
+
 class Graph:
     def __init__(self, num_vertices, edges=()):
         self.adj = [set() for _ in range(num_vertices)]
@@ -24,6 +27,36 @@ class Graph:
 
     def edges(self, vertex):
         return iter(self.adj[vertex])
+
+    def bfs(self, source):
+        visited = set()
+
+        queue = collections.deque()
+        queue.append(source)
+        while queue:
+            vertex = queue.popleft()
+            yield vertex
+
+            for adjacent_vertex in self.adj[vertex]:
+                if adjacent_vertex not in visited:
+                    queue.append(adjacent_vertex)
+
+            visited.add(vertex)
+
+    def dfs(self, source):
+        visited = set()
+
+        stack = [source]
+        while stack:
+            vertex = stack.pop()
+            yield vertex
+
+            for adjacent_vertex in self.adj[vertex]:
+                if adjacent_vertex not in visited:
+                    stack.append(adjacent_vertex)
+
+            visited.add(vertex)
+
 
     def __str__(self):
         return str(self.adj)
@@ -50,3 +83,5 @@ if __name__ == "__main__":
     print(graph.num_vertices)
     print(graph.num_edges)
 
+    print(*graph.dfs(2))
+    print(*graph.bfs(2))
