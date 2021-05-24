@@ -1,12 +1,10 @@
-# Undirected graph (adjacency sets representation to allow for quick checks of adjacent vertices).
-# Note that this implementation forbids parallel edges but does allow for the addition of vertices.
-# (as opposed to an adjacency lists representation).
+# Undirected graph (adjacency lists representation).
 import collections
 
 
 class Graph:
     def __init__(self, num_vertices, edges=()):
-        self.adj = [set() for _ in range(num_vertices)]
+        self.adj = [[] for _ in range(num_vertices)]
 
         self.num_edges = 0
         for edge in edges:
@@ -14,12 +12,12 @@ class Graph:
 
     def add_edge(self, edge):
         from_vertex, to_vertex = edge
-        self.adj[from_vertex].add(to_vertex)
-        self.adj[to_vertex].add(from_vertex)
+        self.adj[from_vertex].append(to_vertex)
+        self.adj[to_vertex].append(from_vertex)
         self.num_edges += 1
 
     def add_vertex(self):
-        self.adj.append(set())
+        self.adj.append([])
 
     @property
     def num_vertices(self):
@@ -98,3 +96,4 @@ if __name__ == "__main__":
     # graph.add_edge((4, 3))
     print(*graph.dfs(2))
     print(*graph.bfs(2))
+
