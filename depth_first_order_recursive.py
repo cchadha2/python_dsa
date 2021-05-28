@@ -1,31 +1,24 @@
 # Depth-First-Order (graph traversal using DFS).
-class DepthFirstOrder:
+from directed_graph_recursive import DiGraph
+
+
+class DepthFirstOrder(DiGraph):
 
     def __init__(self, num_vertices, edges=()):
-        self.adj = [[] for _ in range(num_vertices)]
-        self.num_vertices = num_vertices
-        self.num_edges = 0
-        for edge in edges:
-            self._add_edge(edge)
+        super().__init__(num_vertices, edges)
 
         self._pre_order = []
         self._post_order = []
-        self.visited = set()
         for vertex in range(num_vertices):
-            self._dfs(vertex)
+            self.dfs(vertex)
 
-    def _add_edge(self, edge):
-        from_vertex, to_vertex = edge
-        self.adj[from_vertex].append(to_vertex)
-        self.num_edges += 1
-
-    def _dfs(self, source):
-        if source not in self.visited:
-            self.visited.add(source)
+    def dfs(self, source):
+        if not self.visited[source]:
+            self.visited[source] = True
             self._pre_order.append(source)
 
             for adjacent_vertex in self.adj[source]:
-                self._dfs(adjacent_vertex)
+                self.dfs(adjacent_vertex)
 
             self._post_order.append(source)
 
@@ -37,9 +30,6 @@ class DepthFirstOrder:
 
     def reverse_post_order(self):
         return reversed(self._post_order)
-
-    def __str__(self):
-        return str(self.adj)
 
 
 if __name__ == "__main__":
