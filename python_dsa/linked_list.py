@@ -99,6 +99,23 @@ class LinkedList:
         for value in values:
             self.append(value)
 
+    def remove(self, value):
+        """Remove first occurrence of given value from LinkedList."""
+        self._raise_empty_error()
+
+        node = self._first
+        if node.value == value:
+            self.remove_first()
+            return
+
+        while node.after:
+            if node.after.value == value:
+                node.after = node.after.after
+                self._size -= 1
+                return
+
+            node = node.after
+
     def remove_first(self):
         """Remove first value in LinkedList and return."""
         self._raise_empty_error()
@@ -257,4 +274,12 @@ if __name__ == '__main__':
 
     print(linked_list)
     print("hello" in linked_list)
+
+    linked_list.extend([6, 5, 1, 2, 3])
+    print(linked_list, len(linked_list))
+
+    linked_list.remove(1)
+    print(linked_list, len(linked_list))
+
+
 
