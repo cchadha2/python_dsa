@@ -11,4 +11,5 @@ setuptools.setup(
     author_email="chiragchadhairl@gmail.com",
     description="Common data structures and algorithms in Python",
     packages=setuptools.find_packages(),
+    install_requires=["handy_decorators==0.0.2"],
 )
