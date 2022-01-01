@@ -4,7 +4,7 @@
 
       def check_duplicates(length):
           """Rabin-Karp"""
-          
+
           h = 0
           for idx, char in enumerate(s[:length]):
               h += ord(char) * (26 ** (length - 1 - idx))
@@ -23,7 +23,7 @@
               start += 1
               end += 1
 
-          return False 
+          return False
 
       # Binary search to find length of repeating substrings.
       left, right = 0, len(s) - 1
@@ -37,5 +37,4 @@
               right = mid - 1
 
       return left
-            
-        
+
