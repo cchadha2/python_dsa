@@ -301,4 +301,3 @@ if __name__ == "__main__":
     main([random.randint(0, 10**20) for _ in range(10000)])
     print("Reverse array")
     main([elem for elem in range(10000, 0, -1)])
-

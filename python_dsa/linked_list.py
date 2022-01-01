@@ -9,10 +9,10 @@ class NoSuchElementError(Exception):
 
 
 @dataclass
-class _Node:
+class Node:
     """A private class used to hold data within LinkedList."""
     value: object
-    after: Type["_Node"] = None
+    after: Type["Node"] = None
 
 
 class LinkedListIterator:
@@ -25,7 +25,7 @@ class LinkedListIterator:
         return self
 
     def __next__(self):
-        """Manipulate _Node references to point to next node in LinkedList."""
+        """Manipulate Node references to point to next node in LinkedList."""
         if not self.next_node:
             raise StopIteration
 
@@ -39,7 +39,7 @@ def _add_to_empty(insert_method):
     @functools.wraps(insert_method)
     def decorator(self, value):
         if self.is_empty:
-            node = _Node(value)
+            node = Node(value)
             self._first = self._last = node
             self._size += 1
         else:
@@ -54,7 +54,7 @@ class LinkedList:
         self._size = 0
 
         if values:
-            self._first = _Node(values[0])
+            self._first = Node(values[0])
             self._last = self._first
             self._size += 1
             for value in values[1:]:
@@ -67,7 +67,7 @@ class LinkedList:
     @_add_to_empty
     def append(self, value):
         """Append given value to end of LinkedList."""
-        node = _Node(value)
+        node = Node(value)
 
         self._last.after = node
         self._last = node
@@ -76,7 +76,7 @@ class LinkedList:
     @_add_to_empty
     def insert_first(self, value):
         """Insert given value at start of LinkedList"""
-        node = _Node(value)
+        node = Node(value)
         node.after = self._first
         self._first = node
         self._size += 1
@@ -84,7 +84,7 @@ class LinkedList:
     def insert_after(self, value, to_insert):
         """Insert a given value after another value (if the other value exists)."""
         node = self._get(value)
-        node_to_insert = _Node(to_insert)
+        node_to_insert = Node(to_insert)
 
         if not node.after:
             node.after = node_to_insert
@@ -152,7 +152,7 @@ class LinkedList:
             raise NoSuchElementError("No values in LinkedList.")
 
     def _get(self, value):
-        """Get a _Node object with the given value."""
+        """Get a Node object with the given value."""
         node = self._first
         while node:
             if node.value == value:
