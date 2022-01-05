@@ -1,8 +1,8 @@
 # Depth-First-Order (graph traversal using DFS).
-from directed_graph_recursive import DiGraph
+from graph.directed_graph_recursive import DiGraphRecursive
 
 
-class DepthFirstOrder(DiGraph):
+class DepthFirstOrder(DiGraphRecursive):
 
     def __init__(self, num_vertices, edges=()):
         super().__init__(num_vertices, edges)

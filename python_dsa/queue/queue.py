@@ -26,7 +26,7 @@ class Queue:
 
     @property
     def is_empty(self):
-        return len(self._queue) == 0
+        return not self._queue
 
     def __len__(self):
         return len(self._queue)

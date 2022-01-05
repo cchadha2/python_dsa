@@ -1,8 +1,8 @@
 # Find a cycle in a directed graph.
-from directed_graph_recursive import DiGraph
+from graph.directed_graph_recursive import DiGraphRecursive
 
 
-class DirectedCycle(DiGraph):
+class DirectedCycle(DiGraphRecursive):
 
     def __init__(self, num_vertices, edges=()):
         super().__init__(num_vertices, edges)

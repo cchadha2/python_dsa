@@ -1,5 +1,5 @@
 # Directed graph.
-from undirected_graph import Graph
+from .undirected_graph import Graph
 
 
 class DiGraph(Graph):

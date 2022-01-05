@@ -1,10 +1,10 @@
 # Topological sort with recursive digraph.
-from directed_graph_recursive import DiGraph
-from directed_cycle import DirectedCycle
-from depth_first_order_recursive import DepthFirstOrder
+from graph.directed_graph_recursive import DiGraphRecursive
+from .directed_cycle import DirectedCycle
+from .depth_first_order_recursive import DepthFirstOrder
 
 
-class Topological(DiGraph):
+class Topological(DiGraphRecursive):
 
     def __init__(self, num_vertices, edges=()):
         super().__init__(num_vertices, edges)

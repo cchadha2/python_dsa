@@ -20,8 +20,7 @@ class TestQuickSort(unittest.TestCase):
         self.assertEqual(quick_sort([1]), [1])
 
     def test_cutoff(self):
-        arr = [4, 1, 2, 5, 6, 7]
-        self.assertEqual(quick_sort(arr, cutoff=6), [1, 2, 4, 5, 6, 7])
+        self.assertEqual(quick_sort([4, 1, 2, 5, 6, 7], cutoff=6), [1, 2, 4, 5, 6, 7])
 
 
 if __name__ == "__main__":

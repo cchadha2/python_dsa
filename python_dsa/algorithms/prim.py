@@ -3,7 +3,7 @@ import heapq
 from collections import deque
 from math import inf
 
-from edge_graph import Edge, EdgeWeightedGraph
+from graph.edge_graph import Edge, EdgeWeightedGraph
 
 from handy_decorators import timer
 
