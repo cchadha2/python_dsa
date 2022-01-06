@@ -1,1 +1,1 @@
-from .linked_list import *
+from python_dsa.linked_list.linked_list import *

@@ -1,2 +1,2 @@
-from .trie import *
+from python_dsa.trie.trie import *
 

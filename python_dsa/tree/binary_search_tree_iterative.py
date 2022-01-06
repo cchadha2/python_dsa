@@ -2,8 +2,7 @@
 from collections import deque
 from operator import lt, gt
 
-
-from .binary_search_tree_recursive import _Node, BinarySearchTree
+from python_dsa.tree.binary_search_tree_recursive import _Node, BinarySearchTree
 
 
 class BinarySearchTreeIterative(BinarySearchTree):

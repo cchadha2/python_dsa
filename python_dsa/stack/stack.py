@@ -1,5 +1,5 @@
 # Stack implementations with Python list
-from linked_list import NoSuchElementError
+from python_dsa.linked_list import NoSuchElementError
 
 
 # Resizing stack using a Python list in a composition relationship.

@@ -1,5 +1,5 @@
 # Find a cycle in a directed graph.
-from graph.directed_graph_recursive import DiGraphRecursive
+from python_dsa.graph.directed_graph_recursive import DiGraphRecursive
 
 
 class DirectedCycle(DiGraphRecursive):

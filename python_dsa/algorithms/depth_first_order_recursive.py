@@ -1,5 +1,5 @@
 # Depth-First-Order (graph traversal using DFS).
-from graph.directed_graph_recursive import DiGraphRecursive
+from python_dsa.graph.directed_graph_recursive import DiGraphRecursive
 
 
 class DepthFirstOrder(DiGraphRecursive):

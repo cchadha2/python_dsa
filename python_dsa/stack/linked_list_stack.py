@@ -1,6 +1,7 @@
 # Linked list implementation of stack.
 import functools
-from linked_list import LinkedList, NoSuchElementError
+
+from python_dsa.linked_list import LinkedList, NoSuchElementError
 
 
 def check_empty(method):

@@ -1,12 +1,12 @@
-from .graph import *
-from .hash_table import *
-from .heap import *
-from .linked_list import *
-from .queue import *
-from .stack import *
-from .tree import *
-from .trie import *
+from python_dsa.graph import *
+from python_dsa.hash_table import *
+from python_dsa.heap import *
+from python_dsa.linked_list import *
+from python_dsa.queue import *
+from python_dsa.stack import *
+from python_dsa.tree import *
+from python_dsa.trie import *
 
 # Must come after data structures as it uses them.
-from .algorithms import *
+from python_dsa.algorithms import *
 

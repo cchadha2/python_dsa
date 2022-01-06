@@ -1,5 +1,5 @@
 # Queue implementation with two stacks.
-from linked_list import NoSuchElementError
+from python_dsa.linked_list import NoSuchElementError
 
 
 class Queue:

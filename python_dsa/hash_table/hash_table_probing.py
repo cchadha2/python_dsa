@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Union
 
-from .hash_table_chaining import Item
+from python_dsa.hash_table.hash_table_chaining import Item
 
 
 class HashTableLinearProbing:

@@ -1,7 +1,7 @@
 # Topological sort with recursive digraph.
-from graph.directed_graph_recursive import DiGraphRecursive
-from .directed_cycle import DirectedCycle
-from .depth_first_order_recursive import DepthFirstOrder
+from python_dsa.graph.directed_graph_recursive import DiGraphRecursive
+from python_dsa.algorithms.directed_cycle import DirectedCycle
+from python_dsa.algorithms.depth_first_order_recursive import DepthFirstOrder
 
 
 class Topological(DiGraphRecursive):

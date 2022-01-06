@@ -1,5 +1,5 @@
 # Queue implementation with deque.
-from linked_list import LinkedList, NoSuchElementError
+from python_dsa.linked_list import LinkedList, NoSuchElementError
 
 
 class Queue(LinkedList):

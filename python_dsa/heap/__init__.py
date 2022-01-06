@@ -1,1 +1,1 @@
-from .maxpq import *
+from python_dsa.heap.maxpq import *
