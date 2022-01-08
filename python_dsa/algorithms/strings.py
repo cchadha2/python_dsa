@@ -1,40 +1,47 @@
 # Rabin-Karp with Binary Search on string to find repeating substrings.
 
 def longestRepeatingSubstring(self, s: str) -> int:
+    """O(MlogM) time and O(M) space where M is length of string."""
 
-    def check_duplicates(length):
-        """Rabin-Karp"""
+    start = ord("a")
+    unique = 26
 
-        h = 0
-        for idx, char in enumerate(s[:length]):
-            h += ord(char) * (26 ** (length - 1 - idx))
+    # O(M) time where M is length of s. O(M) space at worst for
+    # hashset.
+    def rabin_karp(length):
 
-        hashes = set()
-        hashes.add(h)
+        seen = set()
 
-        start, end = 0, length
-        while end < len(s):
-            h = (h * 26) - (ord(s[start]) * (26 ** length)) + ord(s[end])
-            if h in hashes:
+        value = 0
+        for idx in range(length):
+            value += (ord(s[idx]) - start) * (unique ** idx)
+
+        seen.add(value)
+
+        for idx in range(length, len(s)):
+            value -= (ord(s[idx - length]) - start)
+            value //= unique
+            value += (ord(s[idx]) - start) * (unique ** (length - 1))
+
+            if value in seen:
                 return True
-            else:
-                hashes.add(h)
 
-            start += 1
-            end += 1
-
+            seen.add(value)
+        #print(seen, length, s)
         return False
 
-    # Binary search to find length of repeating substrings.
-    left, right = 0, len(s) - 1
 
-    while left <= right:
-        mid = (left + right) // 2
+    # O(logM) time binary search over lengths to find
+    # largest length repeating substring.
+    max_length = 0
+    lo, hi = 0, len(s) - 1
+    while lo <= hi:
+        length = (lo + hi) // 2
 
-        if check_duplicates(mid + 1):
-            left = mid + 1
+        if rabin_karp(length):
+            max_length = length
+            lo = length + 1
         else:
-            right = mid - 1
+            hi = length - 1
 
-    return left
-
+    return max_length
